@@ -1,28 +1,16 @@
-"""
-LLM and embedding initialization functions
-"""
-
+from langchain_community.chat_models import ChatOllama
+from langchain_community.embeddings import OllamaEmbeddings
 import os
-from langchain_aws import ChatBedrock, BedrockEmbeddings
-from .config import AWS_REGION, BEDROCK_MODEL
-from dotenv import load_dotenv
-
-load_dotenv()
 
 def get_chat_model():
-    """Initialize ChatBedrock model"""
-    llm = ChatBedrock(
-        model=BEDROCK_MODEL,
-        region_name=AWS_REGION,
-        aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
-        aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY")
+    os.environ["OLLAMA_USE_GPU"] = "0"   # CPU mode
+    llm = ChatOllama(
+        model="llama3.2:1b",   # lightweight model
+        temperature=0.3,
+        num_ctx=4096
     )
     return llm
 
 def get_embedding_function():
-    """Initialize Bedrock embeddings"""
-    try:
-        return BedrockEmbeddings()
-    except Exception as e:
-        print(f"Couldn't make embeddings - {e}")
-        raise e
+    embeddings = OllamaEmbeddings(model="mxbai-embed-large")
+    return embeddings

@@ -2,11 +2,9 @@
 LangGraph workflow building and compilation
 """
 
-import sqlite3
 from langgraph.graph import StateGraph, START, END
-from langgraph.checkpoint.sqlite import SqliteSaver
+from langgraph.checkpoint.memory import MemorySaver
 from models import AgentState
-from .config import CHECKPOINT_DB
 from .nodes import (
     question_rewriter,
     question_classifier,
@@ -18,20 +16,19 @@ from .edges import on_topic_router
 
 def create_graph():
     """Create and compile the LangGraph workflow"""
-    # Initialize SQLite checkpointer
-    conn = sqlite3.connect(CHECKPOINT_DB, check_same_thread=False)
-    checkpointer = SqliteSaver(conn)
-    
+    # Use in-memory checkpointer
+    checkpointer = MemorySaver()
+
     # Build workflow
     workflow = StateGraph(AgentState)
-    
+
     # Add nodes
     workflow.add_node("question_rewriter", question_rewriter)
     workflow.add_node("question_classifier", question_classifier)
     workflow.add_node("off_topic_response", off_topic_response)
     workflow.add_node("retrieve", retrieve)
     workflow.add_node("generate_answer", generate_answer)
-    
+
     # Add edges
     workflow.add_edge(START, "question_rewriter")
     workflow.add_edge("question_rewriter", "question_classifier")
@@ -46,7 +43,8 @@ def create_graph():
     workflow.add_edge("retrieve", "generate_answer")
     workflow.add_edge("generate_answer", END)
     workflow.add_edge("off_topic_response", END)
-    
+
     # Compile
     graph = workflow.compile(checkpointer=checkpointer)
     return graph
+    

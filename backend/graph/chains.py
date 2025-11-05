@@ -4,7 +4,7 @@ LangChain chain functions for the RAG application
 
 from langchain_core.prompts import ChatPromptTemplate
 from .llm import get_chat_model
-from models import ClassificationScore
+
 
 def rephrase_chain():
     """Chain to rephrase user questions based on chat history"""
@@ -23,6 +23,7 @@ Provide ONLY the rephrased question without any additional text."""
     prompt = ChatPromptTemplate.from_template(system_prompt)
     llm = get_chat_model()
     return prompt | llm
+
 
 def classifier_chain():
     """Chain to classify if question is on-topic"""
@@ -45,8 +46,9 @@ Answer ONLY with 'yes' or 'no'."""
     
     prompt = ChatPromptTemplate.from_template(system_prompt)
     llm = get_chat_model()
-    structured_llm = llm.with_structured_output(ClassificationScore)
-    return prompt | structured_llm
+    # Removed with_structured_output for Ollama compatibility
+    return prompt | llm
+
 
 def generate_answer_chain():
     """Chain to generate final answer"""
